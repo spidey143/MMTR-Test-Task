@@ -1,4 +1,4 @@
-package models.requestModels;
+package models.request;
 
 import lombok.Builder;
 import lombok.Data;
