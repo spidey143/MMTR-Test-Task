@@ -22,7 +22,6 @@ public class YotaTests extends BaseTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     private static final Integer ACTIVATION_TIME = 120000;
-    private static RetryAnalyzerCount retryPolicy;
 
 
     @Test(testName = "Тест бизнес-сценария активации абонента", description = "Тест активации абонента", priority = 1)
