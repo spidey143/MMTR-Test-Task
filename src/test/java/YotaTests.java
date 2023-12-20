@@ -13,6 +13,7 @@ import models.response.PhoneResponse;
 import models.response.ReturnResponse;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.log4testng.Logger;
 import service.RetryAnalyzer;
 import utils.Generator;
 
@@ -23,6 +24,7 @@ public class YotaTests extends BaseTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     private static final Integer ACTIVATION_TIME = 120000;
+    public static final Logger LOGGER = Logger.getLogger(YotaTests.class); //логгер не реализован
 
 
     @Test(testName = "Тест бизнес-сценария активации абонента", description = "бизнес-сценария активации абонента",
