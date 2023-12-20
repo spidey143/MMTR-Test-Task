@@ -15,4 +15,14 @@ mvn clean test
 ```shell
 allure serve .\target\allure-results
 ```
+Требования:
+1. Установленная JDK 8
+2. ОС Windows, Linux
 
+Рекомендации:
+1. Склонируйте данный репозиторий
+2. Откройте проект в IntelIji IDEA
+3. Выполните команды из README.md
+
+Используемый стэк:
+Java 8, TestNG, Allure report

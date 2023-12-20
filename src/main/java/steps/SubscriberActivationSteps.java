@@ -82,6 +82,6 @@ public class SubscriberActivationSteps {
         JsonNode jsonNode = OBJECT_MAPPER.readTree(pd);
         String passportSeries = jsonNode.get("passportSeries").asText();
         String passportNumber = jsonNode.get("passportNumber").asText();
-        return new PassportDetailsResponse(passportNumber,passportSeries);
+        return new PassportDetailsResponse(passportNumber, passportSeries);
     }
 }
