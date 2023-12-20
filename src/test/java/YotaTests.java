@@ -5,12 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import io.qameta.allure.Epic;
 import io.restassured.response.Response;
-import models.request.AdditionalParametersRequest;
-import models.request.CustomerRequest;
-import models.response.GetCustomerByIdResponse;
-import models.response.CustomerResponse;
-import models.response.PhoneResponse;
-import models.response.ReturnResponse;
+import models.request.*;
+import models.response.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.log4testng.Logger;
@@ -21,10 +17,9 @@ import java.util.List;
 
 @Epic("Тестовое задание Yota")
 public class YotaTests extends BaseTest {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final XmlMapper XML_MAPPER = new XmlMapper();
     private static final Integer ACTIVATION_TIME = 120000;
-    public static final Logger LOGGER = Logger.getLogger(YotaTests.class); //логгер не реализован
+    //public static final Logger LOGGER = Logger.getLogger(YotaTests.class);
 
 
     @Test(testName = "Тест бизнес-сценария активации абонента", description = "бизнес-сценария активации абонента",
@@ -47,27 +42,27 @@ public class YotaTests extends BaseTest {
                                 .string(Generator.generateRandomString())
                                 .build())
                 .build();
-        String addedCustomerId = SUBSCRIBER_ACTIVATION_STEPS.addNewCustomer(
+        CustomerIdResponse customerIdResponse = SUBSCRIBER_ACTIVATION_STEPS.addNewCustomer(
                 addCustomerRequest,
                 getToken()
         );
 
         CustomerResponse addedCustomerResponse = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(
-                addedCustomerId,
+                customerIdResponse.getId(),
                 getToken()
         );
-        String pd = addedCustomerResponse.getCustomerReturnResponse().getPd();
-        JsonNode jsonNode = OBJECT_MAPPER.readTree(pd);
-        String passportSeries = jsonNode.get("passportSeries").asText();
-        String passportNumber = jsonNode.get("passportNumber").asText();
+
+        PassportDetailsResponse passportDetailsResponse = SUBSCRIBER_ACTIVATION_STEPS.getCustomerResponsePd(
+                addedCustomerResponse);
 
         Assert.assertTrue(
-                passportSeries.length() == 4 && passportNumber.length() == 6,
+                passportDetailsResponse.getPassportSeries().length() == 4
+                        && passportDetailsResponse.getPassportNumber().length() == 6,
                 "Паспортные данные клиента не корректны!");
 
         CustomerResponse expectedCustomerResponse = CustomerResponse.builder()
                 .customerReturnResponse(ReturnResponse.builder()
-                        .customerId(addedCustomerId)
+                        .customerId(customerIdResponse.getId())
                         .phone(addCustomerRequest.getPhone())
                         .name(addCustomerRequest.getName())
                         .status("NEW")
@@ -85,42 +80,36 @@ public class YotaTests extends BaseTest {
         Thread.sleep(ACTIVATION_TIME);
 
         CustomerResponse addedCustomerWithChangedStatusResponse = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(
-                addedCustomerId,
+                customerIdResponse.getId(),
                 getToken()
         );
+
         Assert.assertEquals(
                 addedCustomerWithChangedStatusResponse.getCustomerReturnResponse().getStatus(),
                 "ACTIVE",
                 "Клиент не активирован!");
 
-        String customerInOldSystemRequest = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-                + "<ns3:Envelope xmlns:ns2=\"soap\" xmlns:ns3=\"http://schemas.xmlsoap.org/soap/envelope\">\n"
-                + "    <ns2:Header>\n"
-                + "        <authToken>" + getToken() + "</authToken>\n"
-                + "    </ns2:Header>\n"
-                + "    <ns2:Body>\n"
-                + "        <phoneNumber>" + addedCustomerResponse.getCustomerReturnResponse().getPhone()
-                + "</phoneNumber>\n"
-                + "    </ns2:Body>\n"
-                + "</ns3:Envelope>";
-        Response customerInOldSystemResponse = SUBSCRIBER_ACTIVATION_STEPS.findCustomerByPhoneNumber(
-                customerInOldSystemRequest
-        );
+        CustomerInOldSystemRequest customerInOldSystemRequest = new CustomerInOldSystemRequest(
+                new HeaderRequest(getToken()),
+                new BodyRequest(addedCustomerResponse.getCustomerReturnResponse().getPhone()));
+
         GetCustomerByIdResponse getCustomerByIdResponse = XML_MAPPER.readValue(
-                customerInOldSystemResponse.asString(),
+                SUBSCRIBER_ACTIVATION_STEPS.findCustomerByPhoneNumber(
+                        customerInOldSystemRequest
+                ).asString(),
                 GetCustomerByIdResponse.class
         );
 
         Assert.assertEquals(
                 getCustomerByIdResponse.getBodyResponse().getCustomerId(),
-                addedCustomerId,
+                customerIdResponse.getId(),
                 "Клиент не добавлен в старую систему!"
         );
 
         login("admin", "password");
-        SUBSCRIBER_ACTIVATION_STEPS.changeCustomerStatus(addedCustomerId, getToken(), "NEW", 200);
+        SUBSCRIBER_ACTIVATION_STEPS.changeCustomerStatus(customerIdResponse.getId(), getToken(), "NEW", 200);
         CustomerResponse customerResponseWithNewStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(
-                addedCustomerId,
+                customerIdResponse.getId(),
                 getToken()
         );
 
@@ -148,15 +137,22 @@ public class YotaTests extends BaseTest {
                                 .string(Generator.generateRandomString())
                                 .build())
                 .build();
-        String addedCustomerId = SUBSCRIBER_ACTIVATION_STEPS.addNewCustomer(addCustomerRequest, getToken());
+        CustomerIdResponse customerIdResponse = SUBSCRIBER_ACTIVATION_STEPS.addNewCustomer(
+                addCustomerRequest,
+                getToken()
+        );
 
-        String currentStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(addedCustomerId, getToken())
+        String currentStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(customerIdResponse.getId(), getToken())
                 .getCustomerReturnResponse()
                 .getStatus();
 
-        SUBSCRIBER_ACTIVATION_STEPS.changeCustomerStatus(addedCustomerId, getToken(), "ACTIVE", 200);
+        SUBSCRIBER_ACTIVATION_STEPS.changeCustomerStatus(
+                customerIdResponse.getId(),
+                getToken(), "ACTIVE",
+                200);
 
-        String afterChangeStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(addedCustomerId, getToken())
+        String afterChangeStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(
+                        customerIdResponse.getId(), getToken())
                 .getCustomerReturnResponse()
                 .getStatus();
         Assert.assertNotEquals(currentStatus, afterChangeStatus);
@@ -183,15 +179,19 @@ public class YotaTests extends BaseTest {
                                 .string(Generator.generateRandomString())
                                 .build())
                 .build();
-        String addedCustomerId = SUBSCRIBER_ACTIVATION_STEPS.addNewCustomer(addCustomerRequest, getToken());
+        CustomerIdResponse customerIdResponse = SUBSCRIBER_ACTIVATION_STEPS.addNewCustomer(
+                addCustomerRequest, getToken());
 
-        String currentStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(addedCustomerId, getToken())
+        String currentStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(customerIdResponse.getId(), getToken())
                 .getCustomerReturnResponse()
                 .getStatus();
 
-        SUBSCRIBER_ACTIVATION_STEPS.changeCustomerStatus(addedCustomerId, getToken(), "ACTIVE", 401);
+        SUBSCRIBER_ACTIVATION_STEPS.changeCustomerStatus(
+                customerIdResponse.getId(),
+                getToken(), "ACTIVE", 401);
 
-        String afterChangeStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(addedCustomerId, getToken())
+        String afterChangeStatus = SUBSCRIBER_ACTIVATION_STEPS.getCustomerById(
+                        customerIdResponse.getId(), getToken())
                 .getCustomerReturnResponse()
                 .getStatus();
         Assert.assertEquals(

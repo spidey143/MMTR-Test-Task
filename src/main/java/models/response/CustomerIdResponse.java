@@ -1,14 +1,12 @@
-package models.request;
+package models.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.xml.bind.annotation.XmlElement;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HeaderRequest {
-    private String authToken;
+public class CustomerIdResponse {
+    private String id;
 }

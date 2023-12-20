@@ -8,7 +8,7 @@ java -jar testService-1.0-SNAPSHOT.jar
 
 2. Запуск тестов
 ```shell
-mvn clean -Dtest=YotaTests test
+mvn clean test
 ```
 
 3. Запуск отчета о тестах

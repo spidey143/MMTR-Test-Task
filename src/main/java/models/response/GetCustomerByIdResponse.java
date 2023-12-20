@@ -14,7 +14,7 @@ import models.response.BodyResponse;
 @AllArgsConstructor
 public class GetCustomerByIdResponse {
     @JacksonXmlProperty(localName = "Header")
-    public HeaderRequest headerResponse;
+    public HeaderResponse headerResponse;
     @JacksonXmlProperty(localName = "Body")
     public BodyResponse bodyResponse;
 }
