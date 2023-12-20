@@ -1,12 +1,14 @@
 package models.request;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-public class Header {
-    private String authToken;
+@AllArgsConstructor
+public class ChangeCustomerStatusRequest {
+    private String status;
 }

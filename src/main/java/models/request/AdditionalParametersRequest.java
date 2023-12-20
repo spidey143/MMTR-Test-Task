@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ChangeCustomerStatusResponse {
-    private String status;
+public class AdditionalParametersRequest {
+  private String string;
 }

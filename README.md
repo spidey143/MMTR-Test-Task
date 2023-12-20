@@ -3,7 +3,7 @@
 
 1. Запуск эмулятора
 ```shell
-java -jar testService.jar 
+java -jar testService-1.0-SNAPSHOT.jar 
 ```
 
 2. Запуск тестов
@@ -13,6 +13,6 @@ mvn clean -Dtest=YotaTests test
 
 3. Запуск отчета о тестах
 ```shell
-mvn plugins allure server
+allure serve .\target\allure-results
 ```
 

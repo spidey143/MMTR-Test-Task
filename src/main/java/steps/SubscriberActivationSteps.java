@@ -3,7 +3,7 @@ package steps;
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import models.request.ChangeCustomerStatusResponse;
+import models.request.ChangeCustomerStatusRequest;
 import models.request.CustomerRequest;
 import models.response.CustomerResponse;
 import models.response.PhoneResponse;
@@ -19,17 +19,17 @@ public class SubscriberActivationSteps {
     @Step("Получить спикок свободных номеров телефона")
     public List<PhoneResponse> getEmptyPhones(String token) {
         return given().spec(requestSpecification())
-                .when()
+                .when().log().all()
                 .headers("authToken", token)
                 .get("/simcards/getEmptyPhone")
                 .then().spec(responseSpecification(200)).log().all()
                 .extract().response().body().jsonPath().getList("phones", PhoneResponse.class);
     }
 
-    @Step("Создать нового кастомера")
+    @Step("Создать нового клиента")
     public String addNewCustomer(CustomerRequest customer, String token) {
         return given().spec(requestSpecification())
-                .when()
+                .when().log().all()
                 .headers("authToken", token)
                 .body(customer)
                 .post("/customer/postCustomer")
@@ -37,10 +37,10 @@ public class SubscriberActivationSteps {
                 .extract().response().body().jsonPath().getString("id");
     }
 
-    @Step("Получить кастомера по id")
+    @Step("Получить клиента по id")
     public CustomerResponse getCustomerById(String customerId, String token) {
         return given().spec(requestSpecification())
-                .when()
+                .when().log().all()
                 .headers("authToken", token)
                 .param("customerId", customerId)
                 .get("/customer/getCustomerById")
@@ -48,22 +48,23 @@ public class SubscriberActivationSteps {
                 .extract().response().body().as(CustomerResponse.class);
     }
 
-    @Step("Получить кастомера по номеру телефона в старой системе")
+    @Step("Получить клиента по номеру телефона в старой системе")
     public Response findCustomerByPhoneNumber(String requestCustomerByIdDto) {
         return given().contentType(ContentType.XML)
-                .when()
+                .when().log().all()
                 .body(requestCustomerByIdDto)
                 .headers("Content-Type", "application/xml")
                 .post("/customer/findByPhoneNumber")
-                .then().statusCode(200).log().all().extract().response();
+                .then().statusCode(200).log().all()
+                .extract().response();
     }
 
     @Step("Сменить статус клиента")
     public void changeCustomerStatus(String customerId, String token, String status, Integer code){
         given().spec(requestSpecification())
-                .when()
+                .when().log().all()
                 .headers("authToken", token)
-                .body(ChangeCustomerStatusResponse.builder().status(status).build())
+                .body(ChangeCustomerStatusRequest.builder().status(status).build())
                 .post("/customer/"+customerId+"/changeCustomerStatus")
                 .then().statusCode(code).log().all();
     }

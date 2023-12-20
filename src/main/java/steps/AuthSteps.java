@@ -13,7 +13,7 @@ public class AuthSteps {
     @Step("Авторизация пользователя")
     public Response postLoginRequest(AuthRequest user) {
         return given().spec(requestSpecification())
-                .when()
+                .when().log().all()
                 .body(user)
                 .post("/login")
                 .then().spec(responseSpecification(200)).log().all()

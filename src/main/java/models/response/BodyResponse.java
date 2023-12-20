@@ -1,4 +1,4 @@
-package models.request;
+package models.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class AdditionalParameters {
-  private String string;
+@NoArgsConstructor
+public class BodyResponse {
+    private String customerId;
 }

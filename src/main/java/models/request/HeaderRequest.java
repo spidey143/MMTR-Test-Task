@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Body {
-    private String customerId;
+public class HeaderRequest {
+    private String authToken;
 }
